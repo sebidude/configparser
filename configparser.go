@@ -16,6 +16,36 @@ import (
 	"github.com/ghodss/yaml"
 )
 
+func setMemberValue(config interface{}, field reflect.StructField, fieldidx int, value string) {
+	switch field.Type.Kind().String() {
+	case "string":
+		reflect.Indirect(reflect.ValueOf(config)).Field(fieldidx).SetString(value)
+	case "int":
+		intval, _ := strconv.Atoi(value)
+		reflect.Indirect(reflect.ValueOf(config)).Field(fieldidx).SetInt(int64(intval))
+	case "bool":
+		boolval := false
+		if value == "true" {
+			boolval = true
+		} else if value == "false" {
+			boolval = false
+		}
+		reflect.Indirect(reflect.ValueOf(config)).Field(fieldidx).SetBool(boolval)
+	case "float64":
+		floatvalue, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return
+		}
+		reflect.Indirect(reflect.ValueOf(config)).Field(fieldidx).SetFloat(floatvalue)
+	case "float32":
+		floatvalue, err := strconv.ParseFloat(value, 32)
+		if err != nil {
+			return
+		}
+		reflect.Indirect(reflect.ValueOf(config)).Field(fieldidx).SetFloat(floatvalue)
+	}
+}
+
 // SetValuesFromEnvironmentTag iterates over the struct and checks for "env" tags. If an "env" tag was found,
 // it will set the value of the struct member to the value from the specified env var.
 func SetValuesFromEnvironmentTag(config interface{}) {
@@ -25,14 +55,7 @@ func SetValuesFromEnvironmentTag(config interface{}) {
 		tag := field.Tag.Get("env")
 		value := os.Getenv(tag)
 		if len(value) > 0 {
-			// we need more types here
-			switch field.Type.Kind().String() {
-			case "string":
-				reflect.Indirect(reflect.ValueOf(config)).Field(i).SetString(value)
-			case "int":
-				intval, _ := strconv.Atoi(value)
-				reflect.Indirect(reflect.ValueOf(config)).Field(i).SetInt(int64(intval))
-			}
+			setMemberValue(config, field, i, value)
 		}
 
 		if field.Type.Kind().String() == "struct" {
@@ -57,14 +80,7 @@ func SetValuesFromEnvironment(prefix string, config interface{}) {
 		checkvar := prefix + name
 		value := os.Getenv(checkvar)
 		if len(value) > 0 {
-			// we need more types here
-			switch field.Type.Kind().String() {
-			case "string":
-				reflect.Indirect(reflect.ValueOf(config)).Field(i).SetString(value)
-			case "int":
-				intval, _ := strconv.Atoi(value)
-				reflect.Indirect(reflect.ValueOf(config)).Field(i).SetInt(int64(intval))
-			}
+			setMemberValue(config, field, i, value)
 		}
 
 		if field.Type.Kind().String() == "struct" {

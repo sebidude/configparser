@@ -18,6 +18,9 @@ type User struct {
 	NoEnv   string  `json:"noenv"`
 	Address Address `json:"address"`
 	Limit   int     `json:"limit"`
+	CanTalk bool    `json:"cantalk" env:"USER_TALK"`
+	CanWalk bool    `json:"canwalk"`
+	Score   float64 `json:"score"`
 }
 
 func TestParseYaml(t *testing.T) {
@@ -52,6 +55,7 @@ func TestSetEnvTag(t *testing.T) {
 	os.Setenv("USER_NAME", "thanos")
 	os.Setenv("USER_ADDRESS_STREET", "newstreet")
 	os.Setenv("USER_AGE", "999")
+	os.Setenv("USER_TALK", "true")
 	SetValuesFromEnvironmentTag(&user)
 	if user.Name != "thanos" {
 		t.Errorf("Name was not set from env var.")
@@ -65,9 +69,14 @@ func TestSetEnvTag(t *testing.T) {
 		t.Errorf("Age was not set from env var.")
 	}
 
+	if !user.CanTalk {
+		t.Errorf("user cannot talk")
+	}
+
 	os.Setenv("USER_NAME", "")
 	os.Setenv("USER_ADDRESS_STREET", "")
 	os.Setenv("USER_AGE", "")
+	os.Setenv("USER_TALK", "")
 
 }
 
@@ -81,6 +90,8 @@ func TestSetEnvDynamic(t *testing.T) {
 	os.Setenv("USER_AGE", "50")
 	os.Setenv("USER_ADDRESS_CITY", "New Castle")
 	os.Setenv("USER_LIMIT", "99")
+	os.Setenv("USER_CANWALK", "true")
+	os.Setenv("USER_SCORE", "5.4242")
 	SetValuesFromEnvironment("USER", &user)
 	if user.Age != 50 {
 		t.Errorf("Age was not set from env var.")
@@ -94,9 +105,15 @@ func TestSetEnvDynamic(t *testing.T) {
 		t.Errorf("Limit has not been set from env var.")
 	}
 
+	if !user.CanWalk {
+		t.Errorf("User cannot walk")
+	}
+
 	os.Setenv("USER_AGE", "")
 	os.Setenv("USER_ADDRESS_CITY", "")
 	os.Setenv("USER_LIMIT", "")
+	os.Setenv("USER_CANWALK", "")
+	os.Setenv("USER_SCORE", "")
 
 }
 

@@ -6,3 +6,6 @@ address:
   street: homestreet
   city: donk city
 limit: 10
+cantalk: false
+canwalk: true
+score: 4.3244
