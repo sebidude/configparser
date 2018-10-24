@@ -7,7 +7,7 @@ import (
 
 type Address struct {
 	Street string `json:"street" env:"USER_ADDRESS_STREET"`
-	City   string `json:"city" env:"USER_ADDRESS_CITY"`
+	City   string `json:"city"`
 }
 
 type User struct {
@@ -17,6 +17,7 @@ type User struct {
 	Street  string  `json:"street" env:"USER_STREET"`
 	NoEnv   string  `json:"noenv"`
 	Address Address `json:"address"`
+	Limit   int     `json:"limit"`
 }
 
 func TestParseYaml(t *testing.T) {
@@ -26,13 +27,22 @@ func TestParseYaml(t *testing.T) {
 		t.Errorf("%s", err.Error())
 	}
 	if user.Species != "unknown" {
-
 		t.Errorf("user.species is not unknown.")
-
 	}
 }
 
-func TestSetEnv(t *testing.T) {
+func TestParseJSON(t *testing.T) {
+	var user User
+	err := ParseJSON("test.json", &user)
+	if err != nil {
+		t.Errorf("%s", err.Error())
+	}
+	if user.Species != "unknown" {
+		t.Errorf("user.species is not unknown.")
+	}
+}
+
+func TestSetEnvTag(t *testing.T) {
 	var user User
 	err := ParseYaml("test.yaml", &user)
 	if err != nil {
@@ -41,7 +51,8 @@ func TestSetEnv(t *testing.T) {
 
 	os.Setenv("USER_NAME", "thanos")
 	os.Setenv("USER_ADDRESS_STREET", "newstreet")
-	SetValuesFromEnvironment(&user)
+	os.Setenv("USER_AGE", "999")
+	SetValuesFromEnvironmentTag(&user)
 	if user.Name != "thanos" {
 		t.Errorf("Name was not set from env var.")
 	}
@@ -50,6 +61,70 @@ func TestSetEnv(t *testing.T) {
 		t.Errorf("Street was not set in Address.")
 	}
 
-	t.Logf("%#v", user)
+	if user.Age != 999 {
+		t.Errorf("Age was not set from env var.")
+	}
+
+	os.Setenv("USER_NAME", "")
+	os.Setenv("USER_ADDRESS_STREET", "")
+	os.Setenv("USER_AGE", "")
+
+}
+
+func TestSetEnvDynamic(t *testing.T) {
+	var user User
+	err := ParseYaml("test.yaml", &user)
+	if err != nil {
+		t.Errorf("%s", err.Error())
+	}
+
+	os.Setenv("USER_AGE", "50")
+	os.Setenv("USER_ADDRESS_CITY", "New Castle")
+	os.Setenv("USER_LIMIT", "99")
+	SetValuesFromEnvironment("USER", &user)
+	if user.Age != 50 {
+		t.Errorf("Age was not set from env var.")
+	}
+
+	if user.Address.City != "New Castle" {
+		t.Errorf("City was not set in Address.")
+	}
+
+	if user.Limit != 99 {
+		t.Errorf("Limit has not been set from env var.")
+	}
+
+	os.Setenv("USER_AGE", "")
+	os.Setenv("USER_ADDRESS_CITY", "")
+	os.Setenv("USER_LIMIT", "")
+
+}
+
+func TestSetEnvDynamicNoPrefix(t *testing.T) {
+	var user User
+	err := ParseYaml("test.yaml", &user)
+	if err != nil {
+		t.Errorf("%s", err.Error())
+	}
+
+	os.Setenv("AGE", "50")
+	os.Setenv("ADDRESS_CITY", "New Castle")
+	os.Setenv("USER_LIMIT", "99")
+	SetValuesFromEnvironment("", &user)
+	if user.Age != 50 {
+		t.Errorf("Age was not set from env var.")
+	}
+
+	if user.Address.City != "New Castle" {
+		t.Errorf("City was not set in Address.")
+	}
+
+	if user.Limit != 10 {
+		t.Errorf("Limit has not been set from env var.")
+	}
+
+	os.Setenv("AGE", "")
+	os.Setenv("ADDRESS_CITY", "")
+	os.Setenv("USER_LIMIT", "")
 
 }

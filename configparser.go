@@ -11,13 +11,14 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/ghodss/yaml"
 )
 
-// SetValuesFromEnvironment iterates over the struct and checks for "env" tags. If an "env" tag was found,
+// SetValuesFromEnvironmentTag iterates over the struct and checks for "env" tags. If an "env" tag was found,
 // it will set the value of the struct member to the value from the specified env var.
-func SetValuesFromEnvironment(config interface{}) {
+func SetValuesFromEnvironmentTag(config interface{}) {
 	t := reflect.Indirect(reflect.ValueOf(config)).Type()
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
@@ -36,7 +37,39 @@ func SetValuesFromEnvironment(config interface{}) {
 
 		if field.Type.Kind().String() == "struct" {
 			s := reflect.Indirect(reflect.ValueOf(config)).Field(i)
-			SetValuesFromEnvironment(s.Addr().Interface())
+			SetValuesFromEnvironmentTag(s.Addr().Interface())
+		}
+	}
+}
+
+// SetValuesFromEnvironment iterates over the struct and checks if environment variables were set.
+// It will transform the name of the field to upper and join the the prefix with an _.
+// The resulting string will be looked up with os.Getenv if found it will set the value of the struct member
+// to the value from the env var.
+func SetValuesFromEnvironment(prefix string, config interface{}) {
+	if len(prefix) > 0 {
+		prefix = prefix + "_"
+	}
+	t := reflect.Indirect(reflect.ValueOf(config)).Type()
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		name := strings.ToUpper(field.Name)
+		checkvar := prefix + name
+		value := os.Getenv(checkvar)
+		if len(value) > 0 {
+			// we need more types here
+			switch field.Type.Kind().String() {
+			case "string":
+				reflect.Indirect(reflect.ValueOf(config)).Field(i).SetString(value)
+			case "int":
+				intval, _ := strconv.Atoi(value)
+				reflect.Indirect(reflect.ValueOf(config)).Field(i).SetInt(int64(intval))
+			}
+		}
+
+		if field.Type.Kind().String() == "struct" {
+			s := reflect.Indirect(reflect.ValueOf(config)).Field(i)
+			SetValuesFromEnvironment(checkvar, s.Addr().Interface())
 		}
 	}
 }
