@@ -90,7 +90,7 @@ func SetValuesFromEnvironment(prefix string, config interface{}) {
 	}
 }
 
-// ParseYaml reads the file at filename and marshals the content to config
+// ParseYaml reads the file at filename and unmarshals the content to config
 func ParseYaml(filename string, config interface{}) error {
 	configbytes, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -104,7 +104,7 @@ func ParseYaml(filename string, config interface{}) error {
 	return nil
 }
 
-// ParseJSON reads the file at filename and marshals the content to config
+// ParseJSON reads the file at filename and unmarshals the content to config
 func ParseJSON(filename string, config interface{}) error {
 	configbytes, err := ioutil.ReadFile(filename)
 	if err != nil {
