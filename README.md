@@ -1,5 +1,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) 
-[![Go Report Card](https://goreportcard.com/badge/gitlab.com/sebidude/configparser)](https://goreportcard.com/report/gitlab.com/sebidude/configparser)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sebidude/configparser)](https://goreportcard.com/report/github.com/sebidude/configparser)
+[![GoDoc](https://godoc.org/github.com/sebidude/configparser?status.svg)](https://godoc.org/github.com/sebidude/configparser)
 # configparser
 Parse a json or yaml file and unmarshal the content to a struct type
 
