@@ -7,13 +7,12 @@ package configparser
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"github.com/ghodss/yaml"
+	"gopkg.in/yaml.v3"
 )
 
 func setMemberValue(config interface{}, field reflect.StructField, fieldidx int, value string) {
@@ -92,7 +91,7 @@ func SetValuesFromEnvironment(prefix string, config interface{}) {
 
 // ParseYaml reads the file at filename and unmarshals the content to config
 func ParseYaml(filename string, config interface{}) error {
-	configbytes, err := ioutil.ReadFile(filename)
+	configbytes, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}
@@ -106,7 +105,7 @@ func ParseYaml(filename string, config interface{}) error {
 
 // ParseJSON reads the file at filename and unmarshals the content to config
 func ParseJSON(filename string, config interface{}) error {
-	configbytes, err := ioutil.ReadFile(filename)
+	configbytes, err := os.ReadFile(filename)
 	if err != nil {
 		return err
 	}
